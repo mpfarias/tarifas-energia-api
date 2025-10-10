@@ -8,7 +8,8 @@ import {
     listarDistribuidorasDinamico,
     obterBandeiraAtual,
     obterCSVdaANEEL,
-    buscarDistribuidorasPorNome
+    buscarDistribuidorasPorNome,
+    buscarDistribuidorasPorFiltro
 } from '../controllers/distribuidoras.controller.js';
 
 const router = express.Router();
@@ -19,12 +20,19 @@ router.get('/status', (req, res) => {
 });
 
 router.get('/buscar', buscarDistribuidorasPorNome);
+router.get('/filtro/', buscarDistribuidorasPorFiltro);
 router.get('/cache', listarDistribuidorasCache);
 //router.get('/dinamico', listarDistribuidorasDinamico);
 router.get('/atualizar/csv-url', obterCSVdaANEEL);
 router.get('/bandeira/atual', obterBandeiraAtual);
 router.get('/slugs', listarSlugsDistribuidoras);
 router.get('/selecionaveis', (req, res) => {
+    if(!global.cachedDistribuidoras){
+        console.log("Cache not loaded.");
+        res.json({ sucesso: false, message: "Cache not loaded." })
+        return;
+    }
+
     const lista = global.cachedDistribuidoras.map(d => ({
         nome: d.distribuidora,
         slug: d.slug

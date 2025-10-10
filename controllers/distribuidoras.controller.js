@@ -100,7 +100,7 @@ export const listarDistribuidorasCache = (req, res) => {
 };
 
 export const listarSlugsDistribuidoras = (req, res) => {
-  const slugs = global.cachedDistribuidoras.map(d => d.slug);
+  const slugs = [...new Set(global.cachedDistribuidoras.map(d => d.slug))];
   res.json({ sucesso: true, dados: slugs.sort() });
 };
 
@@ -117,6 +117,48 @@ export const buscarDistribuidorasPorNome = (req, res) => {
 
   if (!resultados.length) {
     return res.status(404).json({ sucesso: false, erro: 'Nenhuma distribuidora encontrada com esse nome.' });
+  }
+
+  res.json({ sucesso: true, dados: resultados });
+};
+
+export const buscarDistribuidorasPorFiltro = (req, res) => {
+  const somenteVigentes = req.query.somenteVigentes?.toLowerCase().trim() === "true" ? true : false;
+  const nome = req.query.nome?.toLowerCase().trim();
+  const modalidade = req.query.modalidade?.toLowerCase().trim();
+  const subgrupo = req.query.subgrupo?.toLowerCase().trim();
+  const subclasse = req.query.subclasse?.toLowerCase().trim();
+  const detalhe = req.query.detalhe?.toLowerCase().trim();
+
+  const resultados = global.cachedDistribuidoras.filter(d => {
+    let isMatch = true;
+
+    if (somenteVigentes) {
+      let now = new Date();
+
+      isMatch &&= now > new Date(d.inicio_vigencia) && now < new Date(d.fim_vigencia);
+    }
+
+    if (nome)
+      isMatch &&= d.distribuidora.toLowerCase() == nome;
+
+    if (modalidade)
+      isMatch &&= d.modalidade.toLowerCase() == modalidade;
+
+    if (subgrupo)
+      isMatch &&= d.subgrupo.toLowerCase() == subgrupo;
+
+    if (subclasse)
+      isMatch &&= d.subclasse?.toLowerCase() == subclasse;
+
+    if (detalhe)
+      isMatch &&= d.detalhe?.toLowerCase() == detalhe;
+
+    return isMatch;
+  });
+
+  if (!resultados.length) {
+    return res.status(404).json({ sucesso: false, erro: 'Nenhuma distribuidora encontrada.' });
   }
 
   res.json({ sucesso: true, dados: resultados });

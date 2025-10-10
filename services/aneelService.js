@@ -1,6 +1,7 @@
 import axios from 'axios';
 import https from 'https';
 import csv from 'csv-parser';
+import iconv from 'iconv-lite';
 
 export const obterDistribuidorasCSV = async () => {
   try {
@@ -23,13 +24,58 @@ export const obterDistribuidorasCSV = async () => {
   }
 };
 
-
 export const lerDistribuidorasCSVDireto = (csvUrl) => {
   return new Promise((resolve, reject) => {
     const resultados = [];
 
     https.get(csvUrl, (res) => {
-      res.pipe(csv({ separator: ';' }))
+      res
+        .pipe(iconv.decodeStream('latin1'))
+        .pipe(csv({ separator: ';' }))
+        .on('data', (data) => {
+          resultados.push(data);
+        })
+        .on('end', () => {
+          resolve(resultados);
+        })
+        .on('error', (err) => {
+          reject(err);
+        });
+    }).on('error', (err) => {
+      reject(err);
+    });
+  });
+};
+
+export const obterBandeirasCSV = async () => {
+  try {
+    const pacote = await axios.get(
+      'https://dadosabertos.aneel.gov.br/api/3/action/package_show',
+      { params: { id: 'bandeiras-tarifarias' } }
+    );
+
+    const recursos = pacote.data.result.resources;
+    const recursoCSV = recursos.find(r => r.format === 'CSV' && r.name.toLowerCase().includes('acionamento'));
+
+    if (!recursoCSV) {
+      throw new Error('Arquivo CSV de bandeiras não encontrado');
+    }
+
+    return recursoCSV.url; // <- link direto pro CSV atualizado
+  } catch (err) {
+    console.error('Erro ao obter URL do CSV:', err.message);
+    throw err;
+  }
+}
+
+export const lerBandeirasCSVDireto = (csvUrl) => {
+  return new Promise((resolve, reject) => {
+    const resultados = [];
+
+    https.get(csvUrl, (res) => {
+      res
+        .pipe(iconv.decodeStream('latin1'))
+        .pipe(csv({ separator: ';' }))
         .on('data', (data) => {
           resultados.push(data);
         })

@@ -17,6 +17,16 @@ GET /distribuidoras/bandeira/atual
 ### ✅ Lista de distribuidoras (cache ANEEL)
 GET /distribuidoras/cache
 
+### ✅ Lista de distribuidoras por filtros (case insensitive, busca igualdade dos valores)
+GET /distribuidoras/filtro
+Query:
+- somenteVigentes - `true` ou `false` (opcional, padrão `false`), filtra somente tarifas vigentes no momento se `true`
+- nome - nome da distribuidora
+- modalidade - modalidade da tarifa (`Convencional`, `Convencional pré-pagamento`, `Branca`...)
+- subgrupo - `B1`, `B2`, `A4`...
+- subclasse - `Baixa renda`, `Residencial`...
+- detalhe - Campo vazio em maioria, mas indica por exemplo se for tarifa de SCEE (Sistema de Compensação de Energia Elétrica) se estiver como `SCEE`.
+
 ### ✅ Lista de slugs válidos
 GET /distribuidoras/slugs
 
