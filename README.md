@@ -42,8 +42,6 @@ GET /distribuidoras/estado/DF
 ### ✅ Projeção de custo em R$
 POST /distribuidoras/projecao
 
-### ✅ Projeção de custo em R$
-
 Body JSON:
 {
   "consumo_kwh": 100,
